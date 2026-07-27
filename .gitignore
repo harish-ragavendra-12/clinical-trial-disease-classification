@@ -1,0 +1,51 @@
+# ===============================
+# Python
+# ===============================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ===============================
+# Virtual Environment
+# ===============================
+.venv/
+venv/
+env/
+ENV/
+
+# ===============================
+# IDE
+# ===============================
+.idea/
+.vscode/
+
+# ===============================
+# Environment Variables
+# ===============================
+.env
+
+# ===============================
+# OS Files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# Model Files
+# ===============================
+models/*.pkl
+models/*.joblib
+
+# Keep the models folder
+!models/.gitkeep
+
+# ===============================
+# Generated Figures
+# ===============================
+figures/
+
+# Keep the figures folder
+!figures/.gitkeep
+
+data/raw/*
+!data/raw/.gitkeep
