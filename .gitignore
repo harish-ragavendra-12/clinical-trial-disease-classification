@@ -42,9 +42,7 @@ models/*.joblib
 # ===============================
 # Generated Figures
 # ===============================
-figures/
-
-# Keep the figures folder
+figures/*
 !figures/.gitkeep
 
 data/raw/*
