@@ -49,10 +49,8 @@ data/processed/*
 # ==================================================
 # Figures
 # ==================================================
-figures/*
-
-# Keep the figures folder
-!figures/.gitkeep
+# Keep generated EDA figures
+# (No ignore rule required)
 
 # ==================================================
 # Trained Models
