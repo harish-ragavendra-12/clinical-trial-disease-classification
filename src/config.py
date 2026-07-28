@@ -13,6 +13,10 @@ PROCESSED_DATA_DIR = DATA_DIR / "processed"
 # Model Directory
 MODELS_DIR = PROJECT_ROOT / "models"
 
+VECTORIZER_FILE = MODELS_DIR / "tfidf_vectorizer.joblib"
+
+LABEL_ENCODER_FILE = MODELS_DIR / "label_encoder.joblib"
+
 # Figures Directory
 FIGURES_DIR = PROJECT_ROOT / "figures"
 
