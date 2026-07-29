@@ -1,84 +1,105 @@
 import joblib
+import pandas as pd
 
 from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    confusion_matrix
-)
-
 from src.config import (
-    MODELS_DIR,
+    FEATURE_ENGINEERED_DATA_FILE,
+    LABEL_ENCODER_FILE,
     BEST_MODEL_FILE,
     VECTORIZER_FILE
 )
 
-from src.feature_engineering import feature_engineering
+from src.model_selection import compare_models
 
 
-def load_feature_engineered_data():
+# ==========================================================
+# Load Feature Engineered Dataset
+# ==========================================================
+
+def load_feature_engineered_dataset():
     """
-    Load feature engineered data.
+    Load feature engineered dataset.
 
     Returns:
-        tuple:
-            X : Text features
-            y : Encoded target labels
-    """
-
-    return feature_engineering()
-
-
-def split_dataset(X, y):
-    """
-    Split dataset into training and testing sets.
-
-    Parameters:
-        X: Text features
-        y: Encoded target labels
-
-    Returns:
-        X_train, X_test, y_train, y_test
+        pd.DataFrame
     """
 
     print("=" * 60)
-    print("Splitting Dataset")
+    print("Loading Feature Engineered Dataset")
     print("=" * 60)
+
+    df = pd.read_csv(
+        FEATURE_ENGINEERED_DATA_FILE
+    )
+
+    print(f"Dataset Shape : {df.shape}")
+
+    return df
+
+
+# ==========================================================
+# Load Label Encoder
+# ==========================================================
+
+def load_label_encoder():
+    """
+    Load saved LabelEncoder.
+
+    Returns:
+        LabelEncoder
+    """
+
+    return joblib.load(
+        LABEL_ENCODER_FILE
+    )
+
+
+# ==========================================================
+# Split Dataset
+# ==========================================================
+
+def split_dataset(df):
+    """
+    Split dataset into train and test sets.
+    """
+
+    X = df["cleaned_summary"]
+
+    y = df["encoded_conditions"]
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
-        test_size=0.20,
+        test_size=0.2,
         random_state=42,
         stratify=y
     )
 
-    print(f"Training Samples : {len(X_train)}")
-    print(f"Testing Samples  : {len(X_test)}")
+    return (
+        X_train,
+        X_test,
+        y_train,
+        y_test
+    )
 
-    return X_train, X_test, y_train, y_test
 
+# ==========================================================
+# Vectorize Text
+# ==========================================================
 
-def vectorize_text(X_train, X_test):
+def vectorize_text(
+        X_train,
+        X_test
+):
     """
-    Convert text data into TF-IDF vectors.
-
-    Returns:
-        X_train_vectorized,
-        X_test_vectorized,
-        vectorizer
+    TF-IDF Vectorization.
     """
-
-    print("=" * 60)
-    print("Vectorizing Text using TF-IDF")
-    print("=" * 60)
 
     vectorizer = TfidfVectorizer()
 
@@ -90,14 +111,6 @@ def vectorize_text(X_train, X_test):
         X_test
     )
 
-    print(
-        f"Training Feature Matrix Shape: {X_train_vectorized.shape}"
-    )
-
-    print(
-        f"Testing Feature Matrix Shape : {X_test_vectorized.shape}"
-    )
-
     return (
         X_train_vectorized,
         X_test_vectorized,
@@ -105,37 +118,16 @@ def vectorize_text(X_train, X_test):
     )
 
 
-def save_vectorizer(vectorizer):
-    """
-    Save TF-IDF vectorizer.
-    """
-
-    print("=" * 60)
-    print("Saving TF-IDF Vectorizer")
-    print("=" * 60)
-
-    joblib.dump(
-        vectorizer,
-        VECTORIZER_FILE
-    )
-
-    print(
-        f"Vectorizer saved successfully:\n{VECTORIZER_FILE}"
-    )
-
+# ==========================================================
+# Logistic Regression
+# ==========================================================
 
 def train_logistic_regression(
         X_train_vectorized,
         y_train
 ):
-    """
-    Train Logistic Regression model.
-    """
 
-    model = LogisticRegression(
-        random_state=42,
-        max_iter=1000
-    )
+    model = LogisticRegression()
 
     model.fit(
         X_train_vectorized,
@@ -145,13 +137,14 @@ def train_logistic_regression(
     return model
 
 
+# ==========================================================
+# Multinomial Naive Bayes
+# ==========================================================
+
 def train_multinomial_naive_bayes(
         X_train_vectorized,
         y_train
 ):
-    """
-    Train Multinomial Naive Bayes model.
-    """
 
     model = MultinomialNB()
 
@@ -163,13 +156,14 @@ def train_multinomial_naive_bayes(
     return model
 
 
+# ==========================================================
+# Random Forest
+# ==========================================================
+
 def train_random_forest(
         X_train_vectorized,
         y_train
 ):
-    """
-    Train Random Forest model.
-    """
 
     model = RandomForestClassifier(
         random_state=42
@@ -183,17 +177,16 @@ def train_random_forest(
     return model
 
 
+# ==========================================================
+# Linear SVC
+# ==========================================================
+
 def train_linear_svc(
         X_train_vectorized,
         y_train
 ):
-    """
-    Train Linear SVC model.
-    """
 
-    model = LinearSVC(
-        random_state=42
-    )
+    model = LinearSVC()
 
     model.fit(
         X_train_vectorized,
@@ -203,240 +196,116 @@ def train_linear_svc(
     return model
 
 
-def evaluate_model(
-        model,
-        X_test_vectorized,
-        y_test
+# ==========================================================
+# Save Artifacts
+# ==========================================================
+
+def save_artifacts(
+        best_model,
+        vectorizer
 ):
     """
-    Evaluate model performance.
+    Save trained artifacts.
     """
-
-    y_prediction = model.predict(
-        X_test_vectorized
-    )
-
-    accuracy = accuracy_score(
-        y_test,
-        y_prediction
-    )
-
-    report = classification_report(
-        y_test,
-        y_prediction
-    )
-
-    matrix = confusion_matrix(
-        y_test,
-        y_prediction
-    )
-
-    print("=" * 60)
-    print("Model Evaluation")
-    print("=" * 60)
-
-    print(
-        f"Accuracy: {accuracy:.4f}"
-    )
-
-    print("\nClassification Report")
-    print(report)
-
-    print("\nConfusion Matrix")
-    print(matrix)
-
-    return accuracy, report, matrix
-
-
-def compare_models(
-        X_train_vectorized,
-        X_test_vectorized,
-        y_train,
-        y_test
-):
-    """
-    Train and compare multiple models.
-
-    Returns:
-        best_model,
-        best_model_name,
-        best_accuracy
-    """
-
-    print("=" * 60)
-    print("Model Comparison")
-    print("=" * 60)
-
-
-    models = {
-
-        "Logistic Regression":
-            train_logistic_regression(
-                X_train_vectorized,
-                y_train
-            ),
-
-        "Multinomial Naive Bayes":
-            train_multinomial_naive_bayes(
-                X_train_vectorized,
-                y_train
-            ),
-
-        "Random Forest":
-            train_random_forest(
-                X_train_vectorized,
-                y_train
-            ),
-
-        "Linear SVC":
-            train_linear_svc(
-                X_train_vectorized,
-                y_train
-            )
-    }
-
-
-    accuracies = {}
-
-
-    for name, model in models.items():
-
-        print("\n")
-        print(f"Evaluating {name}")
-
-        accuracy, _, _ = evaluate_model(
-            model,
-            X_test_vectorized,
-            y_test
-        )
-
-        accuracies[name] = accuracy
-
-
-    print("=" * 60)
-    print("Accuracy Comparison")
-    print("=" * 60)
-
-
-    for name, accuracy in accuracies.items():
-
-        print(
-            f"{name:<30}: {accuracy:.4f}"
-        )
-
-
-    best_model_name = max(
-        accuracies,
-        key=accuracies.get
-    )
-
-
-    best_model = models[
-        best_model_name
-    ]
-
-    best_accuracy = accuracies[
-        best_model_name
-    ]
-
-
-    print("=" * 60)
-    print("Best Model")
-    print("=" * 60)
-
-    print(
-        f"Model Name : {best_model_name}"
-    )
-
-    print(
-        f"Accuracy   : {best_accuracy:.4f}"
-    )
-
-
-    return (
-        best_model,
-        best_model_name,
-        best_accuracy
-    )
-
-
-def save_best_model(best_model):
-    """
-    Save trained model.
-    """
-
-    print("=" * 60)
-    print("Saving Best Model")
-    print("=" * 60)
-
 
     joblib.dump(
         best_model,
         BEST_MODEL_FILE
     )
 
-
-    print(
-        f"Best model saved successfully:\n{BEST_MODEL_FILE}"
+    joblib.dump(
+        vectorizer,
+        VECTORIZER_FILE
     )
 
+    print("\nArtifacts saved successfully.")
 
-def model_training():
-    """
-    Execute complete training pipeline.
-    """
+
+# ==========================================================
+# Training Pipeline
+# ==========================================================
+
+def training_pipeline():
 
     print("=" * 60)
     print("Starting Model Training Pipeline")
     print("=" * 60)
 
+    # Load feature engineered dataset
+    df = load_feature_engineered_dataset()
 
-    # Feature engineering
-    X, y = load_feature_engineered_data()
+    # Load label encoder
+    label_encoder = load_label_encoder()
 
+    # Split dataset
+    (
+        X_train,
+        X_test,
+        y_train,
+        y_test
+    ) = split_dataset(df)
 
-    # Train test split
-    X_train, X_test, y_train, y_test = split_dataset(
-        X,
-        y
-    )
-
-
-    # TF-IDF vectorization
-    X_train_vectorized, X_test_vectorized, vectorizer = vectorize_text(
+    # Vectorize text
+    (
+        X_train_vectorized,
+        X_test_vectorized,
+        vectorizer
+    ) = vectorize_text(
         X_train,
         X_test
     )
 
+    # ==============================
+    # Train Models
+    # ==============================
 
-    # Save vectorizer
-    save_vectorizer(vectorizer)
-
-
-    # Compare models
-    best_model, best_model_name, best_accuracy = compare_models(
+    logistic_model = train_logistic_regression(
         X_train_vectorized,
+        y_train
+    )
+
+    mnb_model = train_multinomial_naive_bayes(
+        X_train_vectorized,
+        y_train
+    )
+
+    random_forest_model = train_random_forest(
+        X_train_vectorized,
+        y_train
+    )
+
+    linear_svc_model = train_linear_svc(
+        X_train_vectorized,
+        y_train
+    )
+
+    # ==============================
+    # Compare Models
+    # ==============================
+
+    best_model = compare_models(
+        logistic_model,
+        mnb_model,
+        random_forest_model,
+        linear_svc_model,
         X_test_vectorized,
-        y_train,
         y_test
     )
 
-
-    # Save best model
-    save_best_model(best_model)
-
-
-    print(
-        "\nModel Training Pipeline Completed Successfully."
-    )
-
-
-    return (
+    # Save artifacts
+    save_artifacts(
         best_model,
-        best_model_name,
-        best_accuracy
+        vectorizer
     )
 
+    print("=" * 60)
+    print("Model Training Pipeline Completed Successfully")
+    print("=" * 60)
+
+
+# ==========================================================
+# Main
+# ==========================================================
 
 if __name__ == "__main__":
-    model_training()
+    training_pipeline()
