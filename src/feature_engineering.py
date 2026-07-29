@@ -5,16 +5,21 @@ from sklearn.preprocessing import LabelEncoder
 
 from src.config import (
     CLEANED_DATA_FILE,
+    FEATURE_ENGINEERED_DATA_FILE,
     LABEL_ENCODER_FILE
 )
 
 
-def load_cleaned_dataset() -> pd.DataFrame:
+# ==========================================================
+# Load Cleaned Dataset
+# ==========================================================
+
+def load_cleaned_dataset():
     """
     Load the cleaned clinical trial dataset.
 
     Returns:
-        pd.DataFrame: Cleaned dataset.
+        pd.DataFrame
     """
 
     print("=" * 60)
@@ -23,28 +28,26 @@ def load_cleaned_dataset() -> pd.DataFrame:
 
     df = pd.read_csv(CLEANED_DATA_FILE)
 
-    print(f"Dataset Shape: {df.shape}")
+    print(f"Dataset Shape : {df.shape}")
 
     return df
 
 
-def select_features_and_target(df: pd.DataFrame):
+# ==========================================================
+# Select Feature and Target
+# ==========================================================
+
+def select_features_and_target(df):
     """
-    Select input feature and target variable.
-
-    Feature:
-        brief_summary
-
-    Target:
-        source_condition_query
+    Select feature and target columns.
 
     Parameters:
-        df (pd.DataFrame): Cleaned clinical trial dataset.
+        df (pd.DataFrame)
 
     Returns:
         tuple:
-            X: Text feature.
-            y: Disease category labels.
+            X
+            y
     """
 
     print("=" * 60)
@@ -55,47 +58,49 @@ def select_features_and_target(df: pd.DataFrame):
 
     y = df["source_condition_query"]
 
-    print(f"Feature Column : brief_summary")
-    print(f"Target Column  : source_condition_query")
+    print("Feature Column : brief_summary")
+    print("Target Column  : source_condition_query")
 
     return X, y
 
 
-def encode_target_labels(y: pd.Series):
+# ==========================================================
+# Encode Target Labels
+# ==========================================================
+
+def encode_target_labels(y):
     """
-    Encode disease categories into numerical labels.
+    Encode disease categories.
 
     Parameters:
-        y (pd.Series): Target labels.
+        y (pd.Series)
 
     Returns:
         tuple:
-            encoded_y: Encoded labels.
-            encoder: Fitted LabelEncoder.
+            encoded_labels
+            label_encoder
     """
 
     print("=" * 60)
     print("Encoding Target Labels")
     print("=" * 60)
 
-    encoder = LabelEncoder()
+    label_encoder = LabelEncoder()
 
-    encoded_y = encoder.fit_transform(y)
+    encoded_labels = label_encoder.fit_transform(y)
 
-    print(f"Number of Classes: {len(encoder.classes_)}")
+    print(f"Total Classes : {len(label_encoder.classes_)}")
 
-    return encoded_y, encoder
+    return encoded_labels, label_encoder
 
 
-def save_label_encoder(encoder):
+# ==========================================================
+# Save Label Encoder
+# ==========================================================
+
+def save_label_encoder(label_encoder):
     """
-    Save LabelEncoder artifact.
-
-    Parameters:
-        encoder: Fitted LabelEncoder.
-
-    Returns:
-        None
+    Save LabelEncoder.
     """
 
     print("=" * 60)
@@ -103,46 +108,121 @@ def save_label_encoder(encoder):
     print("=" * 60)
 
     joblib.dump(
-        encoder,
+        label_encoder,
         LABEL_ENCODER_FILE
     )
 
-    print(
-        f"Label Encoder saved successfully:\n{LABEL_ENCODER_FILE}"
+    print("Label Encoder saved successfully.")
+
+
+# ==========================================================
+# Create Feature Engineered Dataset
+# ==========================================================
+
+def create_feature_engineered_dataset(
+        X,
+        encoded_labels
+):
+    """
+    Create feature engineered dataframe.
+
+    Parameters:
+        X
+        encoded_labels
+
+    Returns:
+        pd.DataFrame
+    """
+
+    print("=" * 60)
+    print("Creating Feature Engineered Dataset")
+    print("=" * 60)
+
+    feature_engineered_df = pd.DataFrame({
+
+        "cleaned_summary": X,
+
+        "encoded_conditions": encoded_labels
+
+    })
+
+    print(feature_engineered_df.head())
+
+    return feature_engineered_df
+
+
+# ==========================================================
+# Save Feature Engineered Dataset
+# ==========================================================
+
+def save_feature_engineered_dataset(df):
+    """
+    Save feature engineered dataset.
+    """
+
+    print("=" * 60)
+    print("Saving Feature Engineered Dataset")
+    print("=" * 60)
+
+    df.to_csv(
+        FEATURE_ENGINEERED_DATA_FILE,
+        index=False
     )
 
+    print(
+        f"Dataset saved successfully:\n{FEATURE_ENGINEERED_DATA_FILE}"
+    )
+
+
+# ==========================================================
+# Feature Engineering Pipeline
+# ==========================================================
 
 def feature_engineering():
     """
     Execute feature engineering pipeline.
 
     Returns:
-        tuple:
-            X: Text feature.
-            encoded_y: Encoded target labels.
+        pd.DataFrame
     """
 
     print("=" * 60)
     print("Starting Feature Engineering Pipeline")
     print("=" * 60)
 
-    # Load dataset
+    # Load cleaned dataset
     df = load_cleaned_dataset()
 
-    # Select features and target
+    # Select feature and target
     X, y = select_features_and_target(df)
 
     # Encode target labels
-    encoded_y, encoder = encode_target_labels(y)
+    encoded_labels, label_encoder = encode_target_labels(y)
 
     # Save encoder
-    save_label_encoder(encoder)
+    save_label_encoder(label_encoder)
+
+    # Create feature engineered dataframe
+    feature_engineered_df = create_feature_engineered_dataset(
+        X,
+        encoded_labels
+    )
+
+    # Save dataset
+    save_feature_engineered_dataset(
+        feature_engineered_df
+    )
 
     print("=" * 60)
-    print("Feature Engineering Completed")
+    print("Feature Engineering Pipeline Completed Successfully")
     print("=" * 60)
 
-    return X, encoded_y
+    return feature_engineered_df
+
+
+# ==========================================================
+# Main
+# ==========================================================
 
 if __name__ == "__main__":
     feature_engineering()
