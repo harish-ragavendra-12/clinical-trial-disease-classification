@@ -310,6 +310,49 @@ hr{
 
 }
 
+/* ==========================================================
+HERO BANNER
+========================================================== */
+
+.hero-title{
+    color:#FFFFFF !important;
+    font-size:52px;
+    font-weight:800;
+    margin-bottom:0;
+}
+
+.hero-subtitle{
+    color:#E2E8F0 !important;
+    font-size:20px;
+    font-weight:500;
+    margin-top:12px;
+}
+
+/* ==========================================================
+FOOTER
+========================================================== */
+
+.footer-title{
+    color:#FFFFFF !important;
+    font-size:42px;
+    font-weight:800;
+}
+
+.footer-subtitle{
+    color:#E2E8F0 !important;
+    font-size:20px;
+}
+
+.footer-tech{
+    color:#FFFFFF !important;
+    font-size:18px;
+}
+
+.footer-copy{
+    color:#CBD5E1 !important;
+    font-size:16px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -393,25 +436,16 @@ st.markdown("""
 background:linear-gradient(90deg,#0F172A,#1E3A8A,#2563EB);
 padding:35px;
 border-radius:20px;
-color:white;
 box-shadow:0px 12px 30px rgba(0,0,0,.18);
 ">
 
-<h1 style="margin-bottom:0;">
+<div class="hero-title">
 🧬 Clinical Trial Disease Classification
-</h1>
+</div>
 
-<p style="
-font-size:20px;
-margin-top:10px;
-color:#E2E8F0;
-">
-
-AI Powered Disease Prediction using
-Natural Language Processing &
-Machine Learning
-
-</p>
+<div class="hero-subtitle">
+AI Powered Disease Prediction using Natural Language Processing & Machine Learning
+</div>
 
 </div>
 """, unsafe_allow_html=True)
@@ -935,39 +969,40 @@ lifecycle including:
 
 st.divider()
 
-st.markdown(
-"""
+st.markdown("""
 <div style="
-background: linear-gradient(90deg,#0F172A,#1E3A8A,#2563EB);
-padding:25px;
-border-radius:18px;
+background:linear-gradient(90deg,#0F172A,#1E3A8A,#2563EB);
+padding:40px;
+border-radius:20px;
 text-align:center;
-color:white;
-margin-top:30px;
+margin-top:40px;
 ">
 
-<h3 style="color:white; margin-bottom:10px;">
+<div class="footer-title">
 🧬 Clinical Trial Disease Classification
-</h3>
+</div>
 
-<p style="color:#E2E8F0;">
+<div class="footer-subtitle">
 AI Powered Disease Prediction using NLP & Machine Learning
-</p>
+</div>
 
-<hr style="border:1px solid rgba(255,255,255,.2);">
+<hr style="
+margin:30px 0;
+border:1px solid rgba(255,255,255,.25);
+">
 
-<p style="color:white;">
+<div class="footer-tech">
 🐍 Python &nbsp; | &nbsp;
 🤖 Scikit-Learn &nbsp; | &nbsp;
 📄 TF-IDF &nbsp; | &nbsp;
-🎈 Streamlit
-</p>
+📍 Streamlit
+</div>
 
-<p style="color:#CBD5E1;">
+<br>
+
+<div class="footer-copy">
 © 2026 Harish Ragavendra
-</p>
+</div>
 
 </div>
-""",
-unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
